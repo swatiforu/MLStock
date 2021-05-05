@@ -11,3 +11,4 @@ Crypto
 keras
 tensorflow-cpu
 numpy
+sklearn
