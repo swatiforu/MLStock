@@ -52,5 +52,5 @@ def prediction7Days(ticker):
   predicted = list(predicted)
   result = {}
   for i in range(7):
-    result[all_dates[i]] = predicted[i]
+    result[all_dates[i]] = str(predicted[i])
   return result
