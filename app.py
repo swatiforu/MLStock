@@ -16,7 +16,7 @@ def getPredictions():
   return prediction7Days(ticker)
 
 def get7dates(date):
-  lastdate = datetime.strptime(date, '%d-%B-%Y')
+  lastdate = datetime.datetime.strptime(date, '%d-%B-%Y')
   all_dates = []
   for i in range(1,8):
     d = lastdate + datetime.timedelta(days = i)
