@@ -10,5 +10,5 @@ requests_toolbelt
 Crypto
 keras
 tensorflow-cpu
-numpy
+numpy==1.19.5
 sklearn
