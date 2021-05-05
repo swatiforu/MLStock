@@ -1,0 +1,13 @@
+flask
+pandas
+gunicorn
+firebase
+python_jwt
+gcloud
+sseclient
+pycryptodome
+requests_toolbelt
+Crypto
+keras
+tensorflow
+numpy
