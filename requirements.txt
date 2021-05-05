@@ -9,5 +9,5 @@ pycryptodome
 requests_toolbelt
 Crypto
 keras
-tensorflow
+tensorflow-cpu
 numpy
