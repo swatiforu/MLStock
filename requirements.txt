@@ -12,3 +12,4 @@ keras
 tensorflow-cpu
 numpy==1.19.5
 sklearn
+flask-cors
