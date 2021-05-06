@@ -5,8 +5,10 @@ import datetime
 from keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 from flask import Flask, request, redirect, url_for, flash, jsonify
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app)
 
 fb = firebase.FirebaseApplication('https://historicaldatafyp-default-rtdb.firebaseio.com/', None)
 
