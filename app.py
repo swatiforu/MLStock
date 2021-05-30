@@ -11,6 +11,66 @@ app = Flask(__name__)
 CORS(app)
 
 fb = firebase.FirebaseApplication('https://historicaldatafyp-default-rtdb.firebaseio.com/', None)
+@app.route('/technical/', methods=['GET'])
+def getTechnical():
+  ticker = request.args['Ticker']
+  a = fb.get('historicaldatafyp-default-rtdb/Stocks/'+ticker, '')
+  df = pd.DataFrame(a)
+  df['Volume'] = [int(x.replace(',', '')) for x in df.Volume.values.copy()]
+  df['Close'] = pd.to_numeric(df['Close'])
+  values = dict()
+  values['OBV'] = calculate_OBV(df)
+  values['MACD'] = calculate_MACD(df)
+  values['RSI'] = calculate_RSI(df)
+  return values
+def calculate_OBV(data):
+  obv = []
+  obv.append(0)
+  for i in range(1, len(data.Close.values)):
+    if data.Close[i]>data.Close[i-1]:
+      obv.append(obv[-1]+data.Volume[i])
+    elif data.Close[i]<data.Close[i-1]:
+      obv.append(obv[-1]-data.Volume[i])
+    else:
+      obv.append(obv[-1])
+  new_df = pd.DataFrame(index = data.index)
+  new_df['OBV'] = obv
+  new_df['OBV_EMA'] = new_df['OBV'].ewm(span = 20).mean()
+  val = new_df.values[-1]
+  if val[0] >= val[1]:
+    return "Buyer Pressure"
+  else:
+    return "Seller Pressure"
+def calculate_MACD(data):
+  ShortEMA = data.Close.ewm(span=12, adjust=False).mean()
+  LongEMA = data.Close.ewm(span=26, adjust=False).mean()
+  MACD = ShortEMA - LongEMA
+  signal = MACD.ewm(span=9, adjust=False).mean()
+  new_df = pd.DataFrame()
+  new_df['MACD'] = MACD
+  new_df['Signal'] = signal
+  val = new_df.values[-1]
+  if val[0]>val[1]:
+    return "Buy Signal"
+  else:
+    return "Sell Signal"
+def calculate_RSI (data):
+  time_window = 14
+  diff = data.Close.diff(1).dropna()
+  up_chg = 0 * diff
+  down_chg = 0 * diff
+  up_chg[diff > 0] = diff[ diff>0 ]
+  down_chg[diff < 0] = diff[ diff < 0 ]
+  up_chg_avg   = up_chg.ewm(com=time_window-1 , min_periods=time_window).mean()
+  down_chg_avg = down_chg.ewm(com=time_window-1 , min_periods=time_window).mean()
+  rs = abs(up_chg_avg/down_chg_avg)
+  rsi = 100 - 100/(1+rs)
+  if rsi.values[-1]>=70:
+    return "Overbought"
+  elif rsi.values[-1]<=30:
+    return "Oversold"
+  else:
+    return "Normal"  
 
 @app.route('/predictions/', methods=['GET'])
 def getPredictions():
