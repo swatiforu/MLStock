@@ -116,3 +116,51 @@ def prediction7Days(ticker):
   for i in range(7):
     result[all_dates[i]] = str(predicted[i])
   return result
+
+@app.route('/investmentrecommendation/stock/', methods=['GET'])
+def investmentStock():
+  ticker = request.args['Ticker']
+  time = request.args['Time']
+  if time == '3 Month':
+    return predictionInvestment(ticker, 90)
+  elif time == '6 Month':
+    return predictionInvestment(ticker, 180)
+  elif time == '1 Year':
+    return predictionInvestment(ticker, 365)
+  elif time == '3 Year':
+    return predictionInvestment(ticker, 365*3)
+  elif time == '5 Year':
+    return predictionInvestment(ticker, 365*5)
+
+
+def predictionInvestment(ticker, time):
+  model = load_model('Weights FYP/'+ticker+'_weights.h5')
+  a = fb.get('historicaldatafyp-default-rtdb/Stocks/'+ticker, '')
+  df = pd.DataFrame(a)
+  all_dates = get7dates(df['Date'].tail(1).values[0])
+  df.set_index(pd.to_datetime(df['Date']), inplace = True)
+  df.drop(['Date'], axis = 1, inplace = True)
+  df['Close'] =pd.to_numeric(df['Close'])
+  data = df.filter(['Close'])
+  dataset = data.values
+  window = time
+  scaler = MinMaxScaler(feature_range=(0,1))
+  scaled_data = scaler.fit_transform(dataset)
+  values = scaled_data[-window:,:]
+  predicted = []
+  vals = []
+  prev_bloc = values.copy()
+  for i in range(window):
+    vals.append(np.asarray([prev_bloc]))
+    p = model.predict(np.asarray([prev_bloc]))
+    for j in range(len(prev_bloc)-1):
+      prev_bloc[j] = prev_bloc[j+1]
+    prev_bloc[-1] = p[0]
+    predicted.append(scaler.inverse_transform(p)[0][0])
+    prev_bloc = np.asarray(prev_bloc)
+  predicted = np.asarray(predicted)
+  predicted = list(predicted)
+  result = {}
+  for i in range(time):
+    result[all_dates[i]] = str(predicted[i])
+  return result
